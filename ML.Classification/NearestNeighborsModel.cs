@@ -1,4 +1,5 @@
-﻿using ML.Data;
+﻿using DotNetExtensions;
+using ML.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -37,20 +38,14 @@ namespace ML.Classification
         protected Func<double[], double[], double> DistanceFunction { get; set; }
 
         public NearestNeighborsModel(LabelledData<T> trainingData, int numNeighbors, Func<double[], double[], double> distanceFunction)
-            : this(trainingData.Features, trainingData.Labels, numNeighbors, distanceFunction)
-        { }
-
-        public NearestNeighborsModel(double[][] features, T[] labels, int numNeighbors, Func<double[], double[], double> distanceFunction)
         {
-            int numRows = features.Length;
-            if (numRows != labels.Length)
-                throw new ArgumentException($"The number of data rows is not equal to the number of labels. Rows: {features.Length}\n Labels: {labels.Length}");
-            
+            int numRows = trainingData.Features.RowCount;
+
             Points = new LabeledVector[numRows];
             for (int i = 0; i < numRows; i++)
             {
-                Points[i].features = features[i];
-                Points[i].label = labels[i];
+                Points[i].features = trainingData.Features[i];
+                Points[i].label = trainingData.Labels[i];
             }
 
             K = numNeighbors;
@@ -118,7 +113,7 @@ namespace ML.Classification
         /// <param name="features">The features (x-values) of the test data.</param>
         /// <param name="labels">The labels (y-values) of the test data.</param>
         /// <returns>The average prediction error and the percent accuracy.</returns>
-        public (double Error, double Accuracy) Test(double[][] features, T[] labels)
+        public (double Error, double Accuracy) Test(Matrix<double> features, T[] labels)
         {
             throw new NotImplementedException();
         }

@@ -1,26 +1,51 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using DotNetExtensions;
 
 namespace ML.Data
 {
-    public class MinMaxNormalizer : INormalizer
+    public class MinMaxNormalizer : IDataNormalizer
     {
         public Data Normalize(Data data)
         {
             return Normalize(data.Features);
         }
 
-        public Data Normalize(double[][] data)
+        public Data Normalize(Matrix<double> data)
         {
-            if (data.Length > 0 && data.Any(v => v.Length != data[0].Length))
-                throw new ArgumentException();
+            double[] mins = new double[data.ColumnCount];
+            for (int i = 0; i < mins.Length; ++i)
+            {
+                mins[i] = double.PositiveInfinity;
+            }
 
-            double[] mins, maxes;
+            double[] maxes = new double[data.ColumnCount];
+            for (int i = 0; i < maxes.Length; ++i)
+            {
+                maxes[i] = double.NegativeInfinity;
+            }
 
+            foreach (double[] row in data)
+            {
+                for (int i = 0; i < data.ColumnCount; i++)
+                {
+                    if (row[i] < mins[i])
+                        mins[i] = row[i];
 
+                    if (row[i] > maxes[i])
+                        maxes[i] = row[i];
+                }
+            }
+
+            Data normalizedData = new Data(new Matrix<double>(data.RowCount, data.ColumnCount));
+
+            for (int i = 0; i < data.RowCount; i++)
+            {
+                for (int j = 0; j < data.ColumnCount; j++)
+                {
+                    normalizedData.Features[i][j] = (data[i][j] - mins[j]) / (maxes[j] - mins[j]);
+                }
+            }
+
+            return normalizedData;
         }
     }
 }

@@ -1,6 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
+using DotNetExtensions;
 
 namespace ML.Data
 {
@@ -8,12 +7,13 @@ namespace ML.Data
     {
         public T[] Labels { get; set; }
 
-        public LabelledData(double[][] features, T[] labels)
+        public LabelledData(Matrix<double> features, T[] labels)
             : base(features)
         {
             Labels = labels;
-            if (Labels.Length != RowCount)
-                throw new ArgumentException($"The number of data rows is not equal to the number of labels. Rows: {RowCount}; Labels: {Labels.Length}");
+
+            if (Labels.Length != features.RowCount)
+                throw new ArgumentException($"The number of data rows is not equal to the number of labels. Rows: {features.RowCount}; Labels: {Labels.Length}");
         }
     }
 }

@@ -1,6 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
+using DotNetExtensions;
 
 namespace ML.Data
 {
@@ -9,18 +8,11 @@ namespace ML.Data
     /// </summary>
     public class Data
     {
-        public int RowCount { get; protected set; }
-        public int ColumnCount { get; protected set; }
-        public double[][] Features { get; protected set; }
+        public Matrix<double> Features { get; protected set; }
 
-        public Data(double[][] features)
+        public Data(Matrix<double> features)
         {
             Features = features;
-            RowCount = Features.Length;
-            ColumnCount = Features[0].Length;
-            foreach (double[] x in Features)
-                if (x.Length != ColumnCount)
-                    throw new ArgumentException($"Data rows are not uniform in size.", nameof(features));
         }
 
         /// <summary>
@@ -31,12 +23,12 @@ namespace ML.Data
         /// <returns>The <see cref="LabelledData{T}"/>.</returns>
         public LabelledData<T> ToLabelledData<T>(int labelColumnIndex)
         {
-            if (labelColumnIndex < 0 || labelColumnIndex >= ColumnCount)
+            if (labelColumnIndex < 0 || labelColumnIndex >= Features.ColumnCount)
                 throw new ArgumentOutOfRangeException(nameof(labelColumnIndex));
 
-            T[] labels = new T[RowCount];
+            T[] labels = new T[Features.RowCount];
 
-            for (int i = 0; i < RowCount; ++i)
+            for (int i = 0; i < Features.RowCount; ++i)
             {
                 try
                 {
@@ -47,9 +39,9 @@ namespace ML.Data
                     throw new ArgumentException($"The specified data column ({labelColumnIndex}) cannot be converted to {typeof(T)}.", nameof(labelColumnIndex), e);
                 }
 
-                double[] x = new double[ColumnCount - 1];
+                double[] x = new double[Features.ColumnCount - 1];
                 Array.Copy(Features[i], 0, x, 0, labelColumnIndex);
-                Array.Copy(Features[i], labelColumnIndex + 1, x, labelColumnIndex, ColumnCount - 1 - labelColumnIndex);
+                Array.Copy(Features[i], labelColumnIndex + 1, x, labelColumnIndex, Features.ColumnCount - 1 - labelColumnIndex);
                 Features[i] = x;
             }
 

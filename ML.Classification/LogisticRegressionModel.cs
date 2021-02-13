@@ -1,4 +1,5 @@
-﻿using ML.Data;
+﻿using DotNetExtensions;
+using ML.Data;
 using System;
 using System.Linq;
 
@@ -9,15 +10,8 @@ namespace ML.Classification
         public double[] Weights { get; protected set; }
 
         public LogisticRegressionModel(LabelledData<bool> trainingData, double learningRate, int numEpochs)
-            : this(trainingData.Features, trainingData.Labels, learningRate, numEpochs)
-        {}
-
-        public LogisticRegressionModel(double[][] features, bool[] labels, double learningRate, int numEpochs)
         {
-            if (features.Length != labels.Length)
-                throw new ArgumentException($"The number of data rows is not equal to the number of labels. Rows: {features.Length}\n Labels: {labels.Length}");
-
-            Train(features, labels.Select(l => l ? 1 : 0).ToArray(), learningRate, numEpochs);
+            Train(trainingData.Features, trainingData.Labels.Select(l => l ? 1 : 0).ToArray(), learningRate, numEpochs);
         }
 
         /// <summary>
@@ -27,10 +21,10 @@ namespace ML.Classification
         /// <param name="labels">Labels indicating the correct classification for each feature vector; y-values.</param>
         /// <param name="learningRate">A Constant modifier that affects the rate at which the weights update.</param>
         /// <param name="numEpochs">Number of training iterations or "epochs".</param>
-        protected void Train(double[][] features, int[] labels, double learningRate, int numEpochs)
+        protected void Train(Matrix<double> features, int[] labels, double learningRate, int numEpochs)
         {
-            int numItems = features.Length;
-            int numFeatures = Utils.GetNumColumns(features);
+            int numItems = features.RowCount;
+            int numFeatures = features.ColumnCount;
             Weights = new double[numFeatures + 1];
             Random random = new Random();
 
@@ -77,12 +71,12 @@ namespace ML.Classification
         /// <param name="features">The features (x-values) of the test data.</param>
         /// <param name="labels">The labels (y-values) of the test data.</param>
         /// <returns>The average prediction error and the percent accuracy.</returns>
-        public (double Error, double Accuracy) Test(double[][] features, bool[] labels)
+        public (double Error, double Accuracy) Test(Matrix<double> features, bool[] labels)
         {
             double errSum = 0;
             int accSum = 0;
 
-            for (int i = 0; i < features.Length; ++i)
+            for (int i = 0; i < features.RowCount; ++i)
             {
                 double predictionValue = Predict(features[i]);
 
@@ -93,7 +87,7 @@ namespace ML.Classification
                     accSum += 1;
             }
 
-            return (errSum / features.Length, (accSum * 1.0) / features.Length);
+            return (errSum / features.RowCount, (accSum * 1.0) / features.RowCount);
         }
 
         /// <summary>
