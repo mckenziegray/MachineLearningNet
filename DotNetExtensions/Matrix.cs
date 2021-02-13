@@ -9,24 +9,37 @@ namespace DotNetExtensions
     ///     Modified jagged array that maintains a uniform number of columns and allows for O(1) extraction of rows and O(n) extraction of columns.
     /// </summary>
     /// <typeparam name="T">The type of items in the matrix.</typeparam>
-    public class Matrix<T> : IList, IList<T[]>, ICloneable, IReadOnlyList<T[]>
+    public class Matrix<T> : IList<T[]>, ICloneable, IReadOnlyList<T[]>
     {
         public int RowCount => Data.Length;
         public int ColumnCount => Data.Length > 0 ? Data[0].Length : 0;
 
         protected T[][] Data { get; set; }
 
-        public bool IsFixedSize => throw new NotImplementedException();
+        public bool IsFixedSize => Data.IsFixedSize;
 
-        public bool IsReadOnly => throw new NotImplementedException();
+        public bool IsReadOnly => Data.IsReadOnly;
 
-        public int Count => throw new NotImplementedException();
+        public int Count => throw new NotSupportedException();
 
-        public bool IsSynchronized => throw new NotImplementedException();
+        public bool IsSynchronized => Data.IsSynchronized;
 
-        public object SyncRoot => throw new NotImplementedException();
+        public object SyncRoot => Data.SyncRoot;
 
-        object IList.this[int index] { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public T[] this[int i]
+        {
+            get
+            {
+                return Data[i];
+            }
+            set
+            {
+                if (RowCount > 0 && value.Length != ColumnCount)
+                    throw new ArgumentException($"Tried to add row that is not the correct length. Expected: {ColumnCount}; actual: {value.Length}.");
+
+                Data[i] = value;
+            }
+        }
 
         public Matrix()
         {
@@ -68,21 +81,6 @@ namespace DotNetExtensions
         }
 
         #region Interface Methods
-        public T[] this[int i]
-        {
-            get
-            {
-                return Data[i];
-            }
-            set
-            {
-                if (RowCount > 0 && value.Length != ColumnCount)
-                    throw new ArgumentException($"Tried to add row that is not the correct length. Expected: {ColumnCount}; actual: {value.Length}.");
-
-                Data[i] = value;
-            }
-        }
-
         public object Clone()
         {
             return new Matrix<T>((T[][])Data.Clone());
@@ -141,31 +139,6 @@ namespace DotNetExtensions
         IEnumerator<T[]> IEnumerable<T[]>.GetEnumerator()
         {
             return (IEnumerator<T[]>)Data.GetEnumerator();
-        }
-
-        public int Add(object value)
-        {
-            throw new NotSupportedException();
-        }
-
-        public bool Contains(object value)
-        {
-            return Data.Contains(value);
-        }
-
-        public int IndexOf(object value)
-        {
-            throw new NotSupportedException();
-        }
-
-        public void Insert(int index, object value)
-        {
-            throw new NotSupportedException();
-        }
-
-        public void Remove(object value)
-        {
-            throw new NotSupportedException();
         }
         #endregion
 
