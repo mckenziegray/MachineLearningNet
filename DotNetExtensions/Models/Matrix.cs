@@ -9,7 +9,7 @@ namespace DotNetExtensions
     /// Modified jagged array that maintains a uniform number of columns and allows for O(1) extraction of rows and O(n) extraction of columns.
     /// </summary>
     /// <typeparam name="T">The type of items in the <see cref="Matrix{T}"/>.</typeparam>
-    public class Matrix<T> : IEnumerable<T[]>, IEnumerable, ICloneable, IReadOnlyList<T[]>
+    public class Matrix<T> : IList<T[]>, IReadOnlyList<T[]>, ICloneable
     {
         /// <summary>
         /// The current number of rows.
@@ -45,6 +45,10 @@ namespace DotNetExtensions
         /// Gets an object that can be used to synchronize access to the <see cref="Matrix{T}"/>.
         /// </summary>
         public object SyncRoot => Data.SyncRoot;
+
+        public T[][] Rows => Data;
+
+        public IEnumerable<IEnumerable<T>> Columns => Enumerable.Range(0, ColumnCount).Select(i => GetColumn(i));
 
         public IEnumerable<T> Flattened => Data.SelectMany(r => r);
 
@@ -94,7 +98,7 @@ namespace DotNetExtensions
         }
 
         /// <summary>
-        /// Creates a <see cref="Matrix{T}"/> and populates it with the data in the given jagged array.
+        /// Creates a <see cref="Matrix{T}"/> using the given jagged array.
         /// </summary>
         /// <param name="data">The initial data for the <see cref="Matrix{T}"/>. The jagged array must be of uniform size (all rows must be the same length) or an <see cref="ArgumentException"/> will be thrown.</param>
         /// <remarks>Makes a shallow copy of <paramref name="data"/>.</remarks>
@@ -103,7 +107,7 @@ namespace DotNetExtensions
             if (data.Length > 0 && data.Any(d => d.Length != data[0].Length))
                 throw new ArgumentException("The given jagged array is not of uniform size.");
             else if (data is not null)
-                data.CopyTo(Data, 0);
+                Data = data;
         }
 
         /// <summary>
@@ -134,16 +138,35 @@ namespace DotNetExtensions
         /// Gets the items in the column at the specified index.
         /// </summary>
         /// <param name="colIdx">The column index.</param>
-        /// <returns>An array of <typeparamref name="T"/>.</returns>
-        public T[] GetColumn(int colIdx)
+        /// <returns>An <see cref="IEnumerable{T}"/> containing the items in column <paramref name="colIdx"/>.</returns>
+        public IEnumerable<T> GetColumn(int colIdx)
         {
             if (colIdx < 0 || colIdx >= ColumnCount)
                 throw new ArgumentOutOfRangeException(nameof(colIdx));
 
-            return Data.Select(r => r[colIdx]).ToArray();
+            return Data.Select(r => r[colIdx]);
         }
 
-        #region Interface Methods
+        /// <summary>
+        /// Searches for the specified item and returns the coordinates of its first occurrence.
+        /// </summary>
+        /// <param name="item">The item to locate.</param>
+        /// <returns>The row and column indices of the first occurrence of <see cref="item"/>, if found; otherwise, (-1, -1).</returns>
+        public (int, int) PositionOf(T item)
+        {
+            for (int r = 0; r < RowCount; ++r)
+            {
+                for (int c = 0; c < ColumnCount; ++c)
+                {
+                    if (GenericHelpers.AreEqual(Data[r][c], item))
+                        return (r, c);
+                }
+            }
+
+            return (-1, -1);
+        }
+
+        #region Interface methods
         /// <summary>
         /// Creates a shallow copy of the <see cref="Matrix{T}"/>.
         /// </summary>
@@ -173,25 +196,6 @@ namespace DotNetExtensions
         }
 
         /// <summary>
-        /// Searches for the specified item and returns the coordinates of its first occurrence.
-        /// </summary>
-        /// <param name="item">The item to locate.</param>
-        /// <returns>The row and column indices of the first occurrence of <see cref="item"/>, if found; otherwise, (-1, -1).</returns>
-        public (int, int) PositionOf(T item)
-        {
-            for (int r = 0; r < RowCount; ++r)
-            {
-                for (int c = 0; c < ColumnCount; ++c)
-                {
-                    if (GenericHelpers.AreEqual(Data[r][c], item))
-                        return (r, c);
-                }
-            }
-
-            return (-1, -1);
-        }
-
-        /// <summary>
         /// Copies all the elements of the <see cref="Matrix{T}"/> to the specified jagged array starting at the specified destination array index.
         /// </summary>
         /// <param name="array">The array that is the destination of the elements copied from the <see cref="Matrix{T}"/>.</param>
@@ -210,7 +214,9 @@ namespace DotNetExtensions
         {
             Data.CopyTo(array, arrayIndex);
         }
+        #endregion
 
+        #region Hidden interface methods
         /// <summary>
         /// Returns an <see cref="IEnumerator"/> for the <see cref="Matrix{T}"/>.
         /// </summary>
@@ -219,12 +225,49 @@ namespace DotNetExtensions
         {
             return (IEnumerator<T[]>)Data.GetEnumerator();
         }
+
+        void IList<T[]>.Insert(int index, T[] row)
+        {
+            ((IList<T[]>)Data).Insert(index, row);
+        }
+
+        int IList<T[]>.IndexOf(T[] item)
+        {
+            return ((IList<T[]>)Data).IndexOf(item);
+        }
+
+        void IList<T[]>.RemoveAt(int index)
+        {
+            ((IList<T[]>)Data).RemoveAt(index);
+        }
+
+        public void Add(T[] row)
+        {
+            ((ICollection<T[]>)Data).Add(row);
+        }
+
+        bool ICollection<T[]>.Contains(T[] row)
+        {
+            return ((ICollection<T[]>)Data).Contains(row);
+        }
+
+        bool ICollection<T[]>.Remove(T[] row)
+        {
+            return ((ICollection<T[]>)Data).Remove(row);
+        }
+
+        void ICollection<T[]>.Clear()
+        {
+            ((ICollection<T[]>)Data).Clear();
+        }
         #endregion
 
-        public static implicit operator Matrix<T>(T[][] a) => new Matrix<T>(a);
-        public static implicit operator Matrix<T>(T[,] a) => new Matrix<T>(a);
+        // Note: Matrixes can be converted to and from jagged arrays in O(1) time, so the cast can be done implicitly.
+        public static implicit operator Matrix<T>(T[][] a) => new(a);
+        public static implicit operator T[][](Matrix<T> m) => m.Data;
 
-        public static explicit operator T[][](Matrix<T> m) => m.Data;
+        // Note: Converting a matrix to or from 2d arrays requires O(n^2) time, so the casts must be done explicitly.
+        public static explicit operator Matrix<T>(T[,] a) => new(a);
         public static explicit operator T[,](Matrix<T> m)
         {
             T[,] array = new T[m.RowCount, m.ColumnCount];

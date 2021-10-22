@@ -7,14 +7,17 @@ using DotNetExtensions;
 
 namespace ML.Data
 {
+    /// <summary>
+    /// Implementation of <see cref="IDataNormalizer"/> which normalizes by mulitplying by the z-score (mean divided by standard deviation)
+    /// </summary>
     public class ZScoreNormalizer : IDataNormalizer
     {
         public Data Normalize(Data data)
         {
-            return Normalize(data.Features);
+            return new Data(Normalize(data.Features));
         }
 
-        public Data Normalize(Matrix<double> data)
+        public Matrix<double> Normalize(Matrix<double> data)
         {
             double[] means = new double[data.ColumnCount];
             for (int i = 0; i < data.ColumnCount; ++i)
@@ -41,13 +44,13 @@ namespace ML.Data
             }
             stdDevs = stdDevs.Select(s => Math.Sqrt(s / data.RowCount)).ToArray();
 
-            Data normalizedData = new Data(new Matrix<double>(data.RowCount, data.ColumnCount));
+            Matrix<double> normalizedData = new Matrix<double>(data.RowCount, data.ColumnCount);
 
             for (int i = 0; i < data.RowCount; i++)
             {
                 for (int j = 0; j < data.ColumnCount; j++)
                 {
-                    normalizedData.Features[i][j] = (data[i][j] - means[j]) / stdDevs[j];
+                    normalizedData[i][j] = (data[i][j] - means[j]) / stdDevs[j];
                 }
             }
 

@@ -2,14 +2,17 @@
 
 namespace ML.Data
 {
+    /// <summary>
+    /// Implementation of <see cref="IDataNormalizer"/> which normalizes by scaling the max and min in each column to 1 and 0, respectively.
+    /// </summary>
     public class MinMaxNormalizer : IDataNormalizer
     {
         public Data Normalize(Data data)
         {
-            return Normalize(data.Features);
+            return new Data(Normalize(data.Features));
         }
 
-        public Data Normalize(Matrix<double> data)
+        public Matrix<double> Normalize(Matrix<double> data)
         {
             double[] mins = new double[data.ColumnCount];
             for (int i = 0; i < mins.Length; ++i)
@@ -35,13 +38,13 @@ namespace ML.Data
                 }
             }
 
-            Data normalizedData = new Data(new Matrix<double>(data.RowCount, data.ColumnCount));
+            Matrix<double> normalizedData = new(data.RowCount, data.ColumnCount);
 
             for (int i = 0; i < data.RowCount; i++)
             {
                 for (int j = 0; j < data.ColumnCount; j++)
                 {
-                    normalizedData.Features[i][j] = (data[i][j] - mins[j]) / (maxes[j] - mins[j]);
+                    normalizedData[i][j] = (data[i][j] - mins[j]) / (maxes[j] - mins[j]);
                 }
             }
 

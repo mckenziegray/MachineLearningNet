@@ -4,11 +4,24 @@ using DotNetExtensions;
 namespace ML.Data
 {
     /// <summary>
-    /// A set of numeric data
+    /// A set of unlabelled numeric data
     /// </summary>
     public class Data
     {
+        /// <summary>
+        /// A <see cref="Matrix{T}"/> containing the data set
+        /// </summary>
         public Matrix<double> Features { get; protected set; }
+
+        public Data(double[][] features)
+        {
+            Features = features;
+        }
+
+        public Data(double[,] features)
+        {
+            Features = new Matrix<double>(features);
+        }
 
         public Data(Matrix<double> features)
         {
@@ -45,6 +58,17 @@ namespace ML.Data
                 Features[i] = x;
             }
 
+            return new LabelledData<T>(Features, labels);
+        }
+
+        /// <summary>
+        /// Converts a data set to a <see cref="LabelledData{T}" /> using the given array of labels.
+        /// </summary>
+        /// <typeparam name="T">The data type of the labels.</typeparam>
+        /// <param name="labels">An array of labels.</param>
+        /// <returns>A set of data containing the features of this data set mapped to the given array of labels.</returns>
+        public LabelledData<T> ToLabelledData<T>(T[] labels)
+        {
             return new LabelledData<T>(Features, labels);
         }
     }

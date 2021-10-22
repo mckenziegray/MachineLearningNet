@@ -2,6 +2,9 @@
 
 namespace ML.Data
 {
+    /// <summary>
+    /// Implementation of <see cref="IDataNormalizer"/> which normalizes by dividing by a scalar, k.
+    /// </summary>
     public class OrderOfMagnitudeNormalizer : IDataNormalizer
     {
         protected double K { get; set; }
@@ -13,18 +16,18 @@ namespace ML.Data
 
         public Data Normalize(Data data)
         {
-            return Normalize(data.Features);
+            return new Data(Normalize(data.Features));
         }
 
-        public Data Normalize(Matrix<double> data)
+        public Matrix<double> Normalize(Matrix<double> data)
         {
-            Data normalizedData = new Data(new Matrix<double>(data.RowCount, data.ColumnCount));
+            Matrix<double> normalizedData = new(data.RowCount, data.ColumnCount);
 
             for (int i = 0; i < data.RowCount; i++)
             {
                 for (int j = 0; j < data.ColumnCount; j++)
                 {
-                    normalizedData.Features[i][j] = data[i][j] / K;
+                    normalizedData[i][j] = data[i][j] / K;
                 }
             }
 
