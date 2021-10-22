@@ -4,15 +4,15 @@ using System.Linq;
 
 namespace DotNetExtensions
 {
-    class Range : IEnumerable<int>
+    public class Range : IRange<int>
     {
-        private readonly bool inclusive;
+        private readonly bool INCLUSIVE;
 
         public int Min { get; set; }
 
         public int Max { get; set; }
 
-        public int Count => inclusive ? Max - Min + 1 : Max - Min;
+        public int Count => INCLUSIVE ? Max - Min + 1 : Max - Min;
 
         public Range(int max, bool inclusive = false)
             : this(0, max, inclusive)
@@ -22,7 +22,7 @@ namespace DotNetExtensions
         {
             Min = min;
             Max = max;
-            this.inclusive = inclusive;
+            INCLUSIVE = inclusive;
         }
 
         public IEnumerator<int> GetEnumerator()

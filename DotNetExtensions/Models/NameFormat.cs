@@ -8,7 +8,8 @@ namespace DotNetExtensions
 {
     public enum NameDisplayType
     {
-        Full,        // John
+        Default,
+        FullCapitalized,    // John
         FullUpper,          // JOHN
         FullLower,          // john
         InitialUpper,       // J
@@ -28,11 +29,11 @@ namespace DotNetExtensions
     public record NameFormat
     {
         public NameOrder NameOrder { get; init; } = NameOrder.Western;
-        public NameDisplayType TitleDisplayType { get; init; } = NameDisplayType.Full;
-        public NameDisplayType ForenameDisplayType { get; init; } = NameDisplayType.Full;
-        public NameDisplayType MiddleNameDisplayType { get; init; } = NameDisplayType.Full;
-        public NameDisplayType SurnameDisplayType { get; init; } = NameDisplayType.Full;
-        public NameDisplayType SuffixDisplayType { get; init; } = NameDisplayType.Full;
+        public NameDisplayType TitleDisplayType { get; init; } = NameDisplayType.Default;
+        public NameDisplayType ForenameDisplayType { get; init; } = NameDisplayType.Default;
+        public NameDisplayType MiddleNameDisplayType { get; init; } = NameDisplayType.Default;
+        public NameDisplayType SurnameDisplayType { get; init; } = NameDisplayType.Default;
+        public NameDisplayType SuffixDisplayType { get; init; } = NameDisplayType.Default;
         public string SuffixSeparator { get; init; } = " ";
     }
 }

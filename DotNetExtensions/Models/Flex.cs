@@ -2,21 +2,35 @@
 
 namespace DotNetExtensions
 {
+    /// <summary>
+    /// Wrapper class for an object that can be one of two different types. The inner object is accessed by casting the <see cref="Flex{T, S}"/> to its type.
+    /// </summary>
+    /// <typeparam name="T">The first type that the inner object can be.</typeparam>
+    /// <typeparam name="S">The second type that the inner object can be.</typeparam>
     public class Flex<T, S>
     {
-        public  Type InnerType { get; set; }
+        /// <summary>
+        /// The current type of the inner object.
+        /// </summary>
+        public Type InnerType { get; set; }
 
         protected T ItemT { get; set; }
         protected S ItemS { get; set; }
 
-        public Flex() { }
-
+        /// <summary>
+        /// Instantiates a <see cref="Flex{T, S}"/> with an inner object of type <typeparamref name="T"/>.
+        /// </summary>
+        /// <param name="item">The object to wrap in the <see cref="Flex{T, S}"/>.</param>
         public Flex(T item)
         {
             ItemT = item;
             InnerType = item.GetType();
         }
 
+        /// <summary>
+        /// Instantiates a <see cref="Flex{T, S}"/> with an inner object of type <typeparamref name="S"/>.
+        /// </summary>
+        /// <param name="item">The object to wrap in the <see cref="Flex{T, S}"/>.</param>
         public Flex(S item)
         {
             ItemS = item;

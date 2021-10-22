@@ -24,6 +24,12 @@ namespace DotNetExtensions
             }
         }
 
+        /// <summary>
+        /// Determines if this type is the same as or derived from the specified type. Intended to be equivalent to using the "is" operator, but for <see cref="Type"/> objects.
+        /// </summary>
+        /// <param name="source">The type to check.</param>
+        /// <param name="other">The type to compare against.</param>
+        /// <returns>True if <paramref name="source"/> is the same type as <paramref name="other"/> or a derived type; false otherwise.</returns>
         public static bool Is(this Type source, Type other)
         {
             return source == other || source.IsSubclassOf(other);

@@ -13,7 +13,7 @@ namespace DotNetExtensions
             {
                 null => null,
                 "" => string.Empty,
-                _ => source.First().ToString().ToUpper() + source.Substring(1).ToLower()
+                _ => source.First().ToString().ToUpper() + source[1..].ToLower()
             };
         }
 
@@ -59,7 +59,8 @@ namespace DotNetExtensions
         {
             return displayType switch
             {
-                NameDisplayType.Full => source,
+                NameDisplayType.Default => source,
+                NameDisplayType.FullCapitalized => source.CapitalizeAll(),
                 NameDisplayType.FullUpper => source.ToUpper(),
                 NameDisplayType.FullLower => source.ToLower(),
                 NameDisplayType.InitialUpper => source.First().ToString().ToUpper(),

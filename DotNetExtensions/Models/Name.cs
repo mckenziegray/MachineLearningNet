@@ -11,26 +11,32 @@ namespace DotNetExtensions
         /// Title, such as: Sir, Ms., Dr., or Queen.
         /// </summary>
         public string Title { get; set; }
+
         /// <summary>
         /// All given names, including first and last name(s).
         /// </summary>
         public IList<string> GivenNames { get; protected set; } = new List<string>();
+
         /// <summary>
         /// First given name.
         /// </summary>
         public string Forename => GivenNames.FirstOrDefault();
+
         /// <summary>
         /// All given names other than the forename.
         /// </summary>
         public IEnumerable<string> MiddleNames => GivenNames.Count > 1 ? GivenNames.Skip(1) : new List<string>();
+
         /// <summary>
         /// Family name (last name).
         /// </summary>
         public string Surname { get; protected set; }
+
         /// <summary>
         /// Suffix, suck as: Jr., III, Esq., or The Great.
         /// </summary>
         public string Suffix { get; set; }
+
         /// <summary>
         /// The name format to be used by default when printing
         /// </summary>
@@ -42,12 +48,12 @@ namespace DotNetExtensions
             Initialize();
         }
 
-        public Name(string firstName, string middleName = null, string lastName = null, string title = null, string suffix = null, string defaultNameFormat = null)
+        public Name(string firstName, string middleName = null, string lastName = null, string title = null, string suffix = null, NameFormat defaultNameFormat = null)
         {
             Initialize(new string[] { firstName, middleName }, lastName, title, suffix, defaultNameFormat);
         }
 
-        public Name(IList<string> givenNames, string surname = null, string title = null, string suffix = null, string defaultNameFormat = null)
+        public Name(IList<string> givenNames, string surname = null, string title = null, string suffix = null, NameFormat defaultNameFormat = null)
         {
             Initialize(givenNames, surname, title, suffix, defaultNameFormat);
         }
@@ -58,38 +64,6 @@ namespace DotNetExtensions
         {
             return ToString(DefaultNameFormat);
         }
-
-        //public string ToString(string format)
-        //{
-        //    Dictionary<string, string> replacements = new Dictionary<string, string>
-        //    {
-        //        { "Tt", Title?.CapitalizeAll() },
-        //        { "TT", Title?.ToUpper() },
-        //        { "tt", Title?.ToLower() },
-        //        { "Ff", Forename?.CapitalizeAll() },
-        //        { "FF", Forename?.ToUpper() },
-        //        { "ff", Forename?.ToLower() },
-        //        { "F",  Forename?.FirstOrDefault().ToString().ToUpper() },
-        //        { "f",  Forename?.FirstOrDefault().ToString().ToLower() },
-        //        { "Mm", string.Join(' ', MiddleNames.Select(m => m?.CapitalizeAll())) },
-        //        { "MM", string.Join(' ', MiddleNames.Select(m => m?.ToUpper())) },
-        //        { "mm", string.Join(' ', MiddleNames.Select(m => m?.ToLower())) },
-        //        { "M.", string.Join(' ', MiddleNames.Select(m => $"{m?.FirstOrDefault().ToString().ToUpper()}.")) },
-        //        { "m.", string.Join(' ', MiddleNames.Select(m => $"{m?.FirstOrDefault().ToString().ToLower()}.")) },
-        //        { "M",  string.Join(' ', MiddleNames.Select(m => m?.FirstOrDefault().ToString().ToUpper())) },
-        //        { "m",  string.Join(' ', MiddleNames.Select(m => m?.FirstOrDefault().ToString().ToLower())) },
-        //        { "Ll", Surname?.CapitalizeAll() },
-        //        { "LL", Surname?.ToUpper() },
-        //        { "ll", Surname?.ToLower() },
-        //        { "L",  Surname?.FirstOrDefault().ToString().ToUpper() },
-        //        { "l",  Surname?.FirstOrDefault().ToString().ToLower() },
-        //        { "Ss", (Suffix ?? "").IsRomanNumeral() ? Suffix?.ToUpper() : Suffix?.CapitalizeAll() },
-        //        { "SS", Suffix?.ToUpper() },
-        //        { "ss", Suffix?.ToLower() }
-        //    };
-
-        //    return format.ReplaceAll(replacements);
-        //}
 
         public string ToString(NameFormat format)
         {
@@ -137,25 +111,14 @@ namespace DotNetExtensions
         }
         #endregion
 
-        protected void Initialize(IList<string> givenNames = null, string surname = null, string title = null, string suffix = null, string defaultNameFormat = null)
+        protected void Initialize(IList<string> givenNames = null, string surname = null, string title = null, string suffix = null, NameFormat defaultNameFormat = null)
         {
             Title = title?.Trim();
             if (givenNames is not null)
                 GivenNames = givenNames.Where(n => n is not null).Select(n => n.Trim()).ToList();
             Surname = surname?.Trim();
             Suffix = suffix?.Trim();
-            DefaultNameFormat = new NameFormat();
+            DefaultNameFormat = defaultNameFormat ?? new NameFormat();
         }
-
-        //protected virtual string GetDefaultNameFormat()
-        //{
-        //    return
-        //        (string.IsNullOrWhiteSpace(Title) ? "" : "Tt ") +
-        //        (string.IsNullOrWhiteSpace(Forename) ? "" : "Ff ") +
-        //        (MiddleNames.Any() ? "Mm " : "") +
-        //        (string.IsNullOrWhiteSpace(Surname) ? "" : "Ll ") +
-        //        (string.IsNullOrWhiteSpace(Suffix) ? "" : "Ss")
-        //        .Trim();
-        //}
     }
 }
