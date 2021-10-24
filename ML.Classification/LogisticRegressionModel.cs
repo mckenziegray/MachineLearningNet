@@ -26,7 +26,7 @@ namespace ML.Classification
             int numItems = features.RowCount;
             int numFeatures = features.ColumnCount;
             Weights = new double[numFeatures + 1];
-            Random random = new Random();
+            Random random = new();
 
             for (int i = 0; i < Weights.Length; ++i)
             {
@@ -58,46 +58,42 @@ namespace ML.Classification
         /// <summary>
         /// Test the error and accuracy of a set of labeled data.
         /// </summary>
-        /// <param name="testData">The data to test the model against.</param>
+        /// <param name="data">The data to test the model against.</param>
         /// <returns>The average prediction error and the percent accuracy.</returns>
-        public (double Error, double Accuracy) Test(LabelledData<bool> testData)
-        {
-            return Test(testData.Features, testData.Labels);
-        }
-
-        /// <summary>
-        /// Test the error and accuracy of a set of labeled data.
-        /// </summary>
-        /// <param name="features">The features (x-values) of the test data.</param>
-        /// <param name="labels">The labels (y-values) of the test data.</param>
-        /// <returns>The average prediction error and the percent accuracy.</returns>
-        public (double Error, double Accuracy) Test(Matrix<double> features, bool[] labels)
+        public (double Error, double Accuracy) Test(LabelledData<bool> data)
         {
             double errSum = 0;
             int accSum = 0;
 
-            for (int i = 0; i < features.RowCount; ++i)
+            for (int i = 0; i < data.Features.RowCount; ++i)
             {
-                double predictionValue = Predict(features[i]);
+                double predictionValue = Predict(data.Features[i]);
 
-                double error = predictionValue - (labels[i] ? 1 : 0);
+                double error = predictionValue - (data.Labels[i] ? 1 : 0);
                 errSum += error * error;
 
-                if (Classify(predictionValue))
+                if (Classify(predictionValue) == data.Labels[i])
                     accSum += 1;
             }
 
-            return (errSum / features.RowCount, (accSum * 1.0) / features.RowCount);
+            return (errSum / data.Features.RowCount, accSum * 1.0 / data.Features.RowCount);
         }
 
-        /// <summary>
-        /// Predict the label of a feature vector.
-        /// </summary>
-        /// <param name="features">The vector of features to classify.</param>
-        /// <returns>The predicted label.</returns>
         public bool Classify(double[] features)
         {
             return Classify(Predict(features));
+        }
+
+        public bool[] ClassifyAll(Matrix<double> features)
+        {
+            bool[] classifications = new bool[features.RowCount];
+
+            for (int i = 0; i < features.RowCount; ++i)
+            {
+                classifications[i] = Classify(features[i]);
+            }
+
+            return classifications;
         }
 
         /// <summary>
@@ -105,7 +101,7 @@ namespace ML.Classification
         /// </summary>
         /// <param name="predictionValue">The value to convert.</param>
         /// <returns>The converted label.</returns>
-        protected bool Classify(double predictionValue)
+        protected static bool Classify(double predictionValue)
         {
             return predictionValue > 0.5;
         }
