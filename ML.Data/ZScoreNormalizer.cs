@@ -44,7 +44,7 @@ namespace ML.Data
             }
             stdDevs = stdDevs.Select(s => Math.Sqrt(s / data.RowCount)).ToArray();
 
-            Matrix<double> normalizedData = new Matrix<double>(data.RowCount, data.ColumnCount);
+            Matrix<double> normalizedData = new(data.RowCount, data.ColumnCount);
 
             for (int i = 0; i < data.RowCount; i++)
             {

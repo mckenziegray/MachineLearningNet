@@ -61,10 +61,7 @@ namespace DotNetExtensions
         /// <returns>An array of <typeparamref name="T"/>.</returns>
         public T[] this[int i]
         {
-            get
-            {
-                return Data[i];
-            }
+            get => Data[i];
             set
             {
                 if (RowCount > 0 && value.Length != ColumnCount)
