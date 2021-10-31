@@ -97,8 +97,11 @@ namespace DotNetExtensions
         /// <summary>
         /// Creates a <see cref="Matrix{T}"/> using the given jagged array.
         /// </summary>
-        /// <param name="data">The initial data for the <see cref="Matrix{T}"/>. The jagged array must be of uniform size (all rows must be the same length) or an <see cref="ArgumentException"/> will be thrown.</param>
-        /// <remarks>Makes a shallow copy of <paramref name="data"/>.</remarks>
+        /// <param name="data">
+        /// The initial data for the <see cref="Matrix{T}"/>.
+        /// The jagged array must be of uniform size (all rows must be the same length).
+        /// </param>
+        /// <exception cref="ArgumentException">Thrown if the rows in <paramref name="data"/> are not all the same length</exception>
         public Matrix(T[][] data)
         {
             if (data.Length > 0 && data.Any(d => d.Length != data[0].Length))
@@ -184,15 +187,6 @@ namespace DotNetExtensions
         }
 
         /// <summary>
-        /// Returns an <see cref="IEnumerator"/> for the <see cref="Matrix{T}"/>.
-        /// </summary>
-        /// <returns>An <see cref="IEnumerator"/> for the <see cref="Matrix{T}"/>.</returns>
-        public IEnumerator GetEnumerator()
-        {
-            return Data.GetEnumerator();
-        }
-
-        /// <summary>
         /// Copies all the elements of the <see cref="Matrix{T}"/> to the specified jagged array starting at the specified destination array index.
         /// </summary>
         /// <param name="array">The array that is the destination of the elements copied from the <see cref="Matrix{T}"/>.</param>
@@ -200,6 +194,15 @@ namespace DotNetExtensions
         public void CopyTo(T[][] array, int arrayIndex)
         {
             Data.CopyTo(array, arrayIndex);
+        }
+
+        /// <summary>
+        /// Returns an <see cref="IEnumerator{T[]}"/> for the <see cref="Matrix{T}"/>.
+        /// </summary>
+        /// <returns>An <see cref="IEnumerator{T[]}"/> for the <see cref="Matrix{T}"/>.</returns>
+        public IEnumerator<T[]> GetEnumerator()
+        {
+            return (IEnumerator<T[]>)Data.GetEnumerator();
         }
 
         /// <summary>
@@ -214,13 +217,9 @@ namespace DotNetExtensions
         #endregion
 
         #region Hidden interface methods
-        /// <summary>
-        /// Returns an <see cref="IEnumerator"/> for the <see cref="Matrix{T}"/>.
-        /// </summary>
-        /// <returns>An <see cref="IEnumerator"/> for the <see cref="Matrix{T}"/>.</returns>
-        IEnumerator<T[]> IEnumerable<T[]>.GetEnumerator()
+        IEnumerator IEnumerable.GetEnumerator()
         {
-            return (IEnumerator<T[]>)Data.GetEnumerator();
+            return Data.GetEnumerator();
         }
 
         void IList<T[]>.Insert(int index, T[] row)

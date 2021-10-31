@@ -9,7 +9,7 @@ namespace ML.Data
     public class Data
     {
         /// <summary>
-        /// A <see cref="Matrix{T}"/> containing the data set
+        /// A <see cref="Matrix{double}"/> containing the data set
         /// </summary>
         public Matrix<double> Features { get; protected set; }
 

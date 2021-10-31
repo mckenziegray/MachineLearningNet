@@ -16,12 +16,7 @@ namespace ML.Classification
 
             public int CompareTo(LabeledVector other)
             {
-                if (distance < other.distance)
-                    return -1;
-                else if (distance > other.distance)
-                    return 1;
-                else
-                    return 0;
+                return distance.CompareTo(other.distance);
             }
         }
 
@@ -59,6 +54,26 @@ namespace ML.Classification
         /// <returns>The predicted label.</returns>
         public T Classify(double[] features)
         {
+            return Predict(features).Label;
+        }
+
+        /// <summary>
+        /// Predict the classification of every feature vector in the given matrix.
+        /// </summary>
+        /// <param name="features">A matrix of feature vectors.</param>
+        /// <returns>An array of classification labels.</returns>
+        public T[] ClassifyAll(Matrix<double> features)
+        {
+            return features.Select(v => Classify(v)).ToArray();
+        }
+
+        /// <summary>
+        /// Predict the label of a feature vector.
+        /// </summary>
+        /// <param name="features">The feature vector to classify.</param>
+        /// <returns>A tuple containing the predicted label and a value representing the confidence in the selection (based on voting) as a percent.</returns>
+        protected (T Label, double Confidence) Predict(double[] features)
+        {
             // Calculate distance to each data vector
             for (int i = 0; i < Points.Length; ++i)
                 Points[i].distance = DistanceFunction(Points[i].features, features);
@@ -75,7 +90,7 @@ namespace ML.Classification
                 weights[i] /= weightSum;
 
             // Vote
-            Dictionary<T, double> votes = new Dictionary<T, double>(Points.Select(p => p.label).Distinct().Select(p => new KeyValuePair<T, double>(p, 0)));
+            Dictionary<T, double> votes = new(Points.Select(p => p.label).Distinct().Select(p => new KeyValuePair<T, double>(p, 0)));
             for (int i = 0; i < K; ++i)
             {
                 T classLabel = Points[i].label;
@@ -84,7 +99,7 @@ namespace ML.Classification
 
             //Predict using ArgMax of votes
             T prediction = votes.First().Key;
-            double maxVal = votes.First().Value;
+            double maxVal = double.NegativeInfinity;
             foreach (KeyValuePair<T, double> vote in votes)
             {
                 if (vote.Value > maxVal)
@@ -94,28 +109,31 @@ namespace ML.Classification
                 }
             }
 
-            return prediction;
+            return (prediction, votes.Where(v => v.Key.Equals(prediction)).Select(v => v.Value).Sum() / votes.Values.Sum());
         }
 
         /// <summary>
         /// Test the error and accuracy of a set of labeled data.
         /// </summary>
-        /// <param name="testData">The data to test the model against.</param>
+        /// <param name="data">The data to test the model against.</param>
         /// <returns>The average prediction error and the percent accuracy.</returns>
-        public (double Error, double Accuracy) Test(LabelledData<T> testData)
+        public (double Error, double Accuracy) Test(LabelledData<T> data)
         {
-            return Test(testData.Features, testData.Labels);
-        }
+            double errSum = 0;
+            int accSum = 0;
 
-        /// <summary>
-        /// Test the error and accuracy of a set of labeled data.
-        /// </summary>
-        /// <param name="features">The features (x-values) of the test data.</param>
-        /// <param name="labels">The labels (y-values) of the test data.</param>
-        /// <returns>The average prediction error and the percent accuracy.</returns>
-        public (double Error, double Accuracy) Test(Matrix<double> features, T[] labels)
-        {
-            throw new NotImplementedException();
+            for (int i = 0; i < data.Features.RowCount; ++i)
+            {
+                (T prediction, double confidence) = Predict(data.Features[i]);
+
+                double error = 1 - confidence;
+                errSum += error * error;
+
+                if (prediction.Equals(data.Labels[i]))
+                    accSum += 1;
+            }
+
+            return (errSum / data.Features.RowCount, accSum * 1.0 / data.Features.RowCount);
         }
     }
 }
