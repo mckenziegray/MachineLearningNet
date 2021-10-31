@@ -60,6 +60,30 @@ namespace DotNetExtensions
                 body(item, i++);
         }
 
+        public static (IEnumerable<T> LesserSide, IEnumerable<T> GreaterSide) Split<T>(this IEnumerable<T> source, T threshold)
+            where T : IComparable<T>
+        {
+            return Split(source, threshold, (T item) => item);
+        }
+
+        public static (IEnumerable<TSource> LesserSide, IEnumerable<TSource> GreaterSide) Split<TSource, TKey>(
+            this IEnumerable<TSource> source, TKey threshold, Func<TSource, TKey> keySelector)
+            where TKey : IComparable<TKey>
+        {
+            List<TSource> lesserSide = new();
+            List<TSource> greaterSide = new();
+
+            foreach (TSource item in source)
+            {
+                if (keySelector(item).CompareTo(threshold) > 0)
+                    greaterSide.Add(item);
+                else
+                    lesserSide.Add(item);
+            }
+
+            return (lesserSide, greaterSide);
+        }
+
         public static double GeometricMean(this IEnumerable<double> source)
         {
             return Math.Pow(source.Aggregate((a, b) => a * b), 1 / source.Count());
@@ -79,7 +103,7 @@ namespace DotNetExtensions
             {
                 median = source.ElementAt(count / 2);
             }
-            else 
+            else
             {
                 median = source.Skip((count / 2) - 1).Take(2).Average();
             }
